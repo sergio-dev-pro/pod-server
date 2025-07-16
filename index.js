@@ -1,9 +1,9 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const cors = require('cors');
-
+const express = require("express");
+const sqlite3 = require("sqlite3").verbose();
+const cors = require("cors");
+const fetch = require("node-fetch");
 const app = express();
-const db = new sqlite3.Database('./dados.db');
+const db = new sqlite3.Database("./dados.db");
 
 // Middleware
 app.use(cors());
@@ -27,10 +27,18 @@ db.run(`
 `);
 
 // Rota para receber dados
-app.post('/enviar', (req, res) => {
+app.post("/enviar", (req, res) => {
   const {
-    nome, email, telefone, cep, rua, numero,
-    complemento, bairro, cidade, estado
+    nome,
+    email,
+    telefone,
+    cep,
+    rua,
+    numero,
+    complemento,
+    bairro,
+    cidade,
+    estado,
   } = req.body;
 
   const query = `
@@ -40,15 +48,39 @@ app.post('/enviar', (req, res) => {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [
-    nome, email, telefone, cep, rua, numero,
-    complemento, bairro, cidade, estado
-  ], function (err) {
+  db.run(
+    query,
+    [
+      nome,
+      email,
+      telefone,
+      cep,
+      rua,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      estado,
+    ],
+    function (err) {
+      if (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .json({ erro: "Erro ao salvar no banco de dados" });
+      }
+      res.status(200).json({ mensagem: "Dados salvos com sucesso!" });
+    }
+  );
+});
+
+app.get("/usuarios", (req, res) => {
+  db.all("SELECT * FROM usuarios", [], (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ erro: 'Erro ao salvar no banco de dados' });
+      return res.status(500).json({ erro: "Erro ao buscar dados" });
     }
-    res.status(200).json({ mensagem: 'Dados salvos com sucesso!' });
+    res.json(rows);
   });
 });
 
