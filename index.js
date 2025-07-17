@@ -8,6 +8,7 @@ const db = new sqlite3.Database("./dados.db");
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 // Criação da tabela
 db.run(`
